@@ -2,8 +2,10 @@
 const path = require("path");
 
 // plugin
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-var HtmlWebpackPlugin = require("html-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 // const
 const ENV = process.env.NODE_ENV || "development";
@@ -35,11 +37,22 @@ module.exports = {
     ],
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: "static/css/[contenthash:8].css",
+      chunkFilename: "static/css/[contenthash:8].chunk.css",
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "./public/index.html"),
     }),
+    dev && new webpack.HotModuleReplacementPlugin({}),
   ],
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        exclude: /node_modules/,
+      }),
+    ],
+  },
 };
