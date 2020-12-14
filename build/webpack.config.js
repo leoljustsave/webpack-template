@@ -1,6 +1,9 @@
 // node
 const path = require("path");
 
+// webpack
+const webpack = require("webpack");
+
 // plugin
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -13,8 +16,7 @@ const prod = ENV === "production";
 const dev = ENV === "development";
 
 module.exports = {
-  context: path.resolve(__dirname, "./src"),
-  entry: ["./index.js"],
+  entry: "./src/index.js",
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "./dist"),
@@ -27,12 +29,34 @@ module.exports = {
        */
       {
         test: /.s?css$/i,
-        use: [prod && MiniCssExtractPlugin.loader, dev && "style-loader", "css-loader", "scss-loader"],
+        use: [
+          prod && MiniCssExtractPlugin.loader,
+          dev && "style-loader",
+          "css-loader",
+          "postcss-loader",
+          "sass-loader",
+        ].filter(Boolean),
         exclude: /node_modules/,
       },
       {
-        test: /.js$/i,
-        use: ["babel-loader"],
+        test: /.jsx?$/i,
+        use: "babel-loader",
+        exclude: /node_modules/,
+      },
+      {
+        test: [/\.jpe?g$/, /\.png$/],
+        loader: require.resolve("url-loader"),
+        options: {
+          limit: 5000,
+          name: prod ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
+        },
+      },
+      {
+        test: /\.(png|jpg)$/,
+        loader: "file-loader",
+        options: {
+          name: prod ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
+        },
       },
     ],
   },
@@ -43,7 +67,7 @@ module.exports = {
       chunkFilename: "static/css/[contenthash:8].chunk.css",
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "./public/index.html"),
+      template: "./public/index.html",
     }),
     dev && new webpack.HotModuleReplacementPlugin({}),
   ],
