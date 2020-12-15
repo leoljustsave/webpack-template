@@ -30,10 +30,12 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     filename: "bundle.js",
-    path: path.resolve(__dirname, "./dist"),
+    path: path.resolve(__dirname, "../dist"),
   },
   module: {
+    strictExportPresence: true,
     rules: [
+      { parser: { requireEnsure: false } },
       // 生产环境推荐使用 mini-css-extract-plugin , 避免加载故障
       // 开发环境推荐使用 style-loader , 加快打包
       {
@@ -45,7 +47,18 @@ module.exports = {
           },
           {
             test: /.(scss|sass)$/i,
-            use: [...getStyleLoaders({ sourceMap: SOURCE_MAP }), "sass-loader"],
+            use: [
+              ...getStyleLoaders({ sourceMap: SOURCE_MAP }),
+              // 配合 sass-loader 使用 , 帮助 sass-loader 找到对应 url 资源
+              {
+                loader: require.resolve("resolve-url-loader"),
+                options: {
+                  sourceMap: SOURCE_MAP,
+                  root: path.resolve(__dirname, "../src"),
+                },
+              },
+              "sass-loader",
+            ],
             exclude: /node_modules/,
           },
           // babel-loader 自带 jsx 处理
@@ -86,7 +99,7 @@ module.exports = {
       template: "./public/index.html",
     }),
     dev && new HotModuleReplacementPlugin({}),
-  ],
+  ].filter(Boolean),
   optimization: {
     minimize: true,
     minimizer: [
@@ -107,18 +120,19 @@ module.exports = {
       }),
     ],
   },
+  devtool: prod ? false : "cheap-module-eval-source-map",
   // 当出错时直接失败 , 而不是容忍
   bail: prod,
   // 一些第三方库加载了 node 模块但是不能在浏览器使用他们
   // 通知 webpack 提供空内容
-  node: {
-    module: "empty",
-    dgram: "empty",
-    dns: "mock",
-    fs: "empty",
-    http2: "empty",
-    net: "empty",
-    tls: "empty",
-    child_process: "empty",
-  },
+  // node: {
+  //   module: "empty",
+  //   dgram: "empty",
+  //   dns: "mock",
+  //   fs: "empty",
+  //   http2: "empty",
+  //   net: "empty",
+  //   tls: "empty",
+  //   child_process: "empty",
+  // },
 };
