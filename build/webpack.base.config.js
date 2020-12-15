@@ -17,11 +17,19 @@ const prod = ENV === "production";
 const dev = ENV === "development";
 const SOURCE_MAP = prod ? false : true;
 
+console.log('dev: ', dev)
+
 // function
-const getStyleLoaders = (cssOpt) => {
-  const loaders = [prod && MiniCssExtractPlugin.loader, dev && "style-loader", "css-loader", "postcss-loader"].filter(
-    Boolean
-  );
+const getStyleLoaders = (cssOption) => {
+  const loaders = [
+    prod && MiniCssExtractPlugin.loader,
+    dev && "style-loader",
+    {
+      loader: "css-loader",
+      options: cssOption,
+    },
+    "postcss-loader",
+  ].filter(Boolean);
 
   return loaders;
 };
@@ -29,7 +37,7 @@ const getStyleLoaders = (cssOpt) => {
 module.exports = {
   entry: "./src/index.js",
   output: {
-    filename: "bundle.js",
+    filename: prod ? "static/js/bundle.js" : "static/js/[name].[contenthash:8].js",
     path: path.resolve(__dirname, "../dist"),
   },
   module: {
@@ -119,6 +127,12 @@ module.exports = {
         canPrint: prod,
       }),
     ],
+  },
+  devServer: {
+    hot: true,
+    inline: true,
+    compress: true,
+    port: 8000,
   },
   devtool: prod ? false : "cheap-module-eval-source-map",
   // 当出错时直接失败 , 而不是容忍
