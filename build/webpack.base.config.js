@@ -17,7 +17,7 @@ const prod = ENV === "production";
 const dev = ENV === "development";
 const SOURCE_MAP = prod ? false : true;
 
-console.log('dev: ', dev)
+console.log("dev: ", dev);
 
 // function
 const getStyleLoaders = (cssOption) => {
@@ -38,7 +38,7 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     filename: prod ? "static/js/bundle.js" : "static/js/[name].[contenthash:8].js",
-    path: path.resolve(__dirname, "../dist"),
+    path: path.resolve(__dirname, "./dist"),
   },
   module: {
     strictExportPresence: true,
@@ -62,7 +62,7 @@ module.exports = {
                 loader: require.resolve("resolve-url-loader"),
                 options: {
                   sourceMap: SOURCE_MAP,
-                  root: path.resolve(__dirname, "../src"),
+                  root: path.resolve(__dirname, "./src"),
                 },
               },
               "sass-loader",
@@ -130,7 +130,6 @@ module.exports = {
   },
   devServer: {
     hot: true,
-    inline: true,
     compress: true,
     port: 8000,
   },
