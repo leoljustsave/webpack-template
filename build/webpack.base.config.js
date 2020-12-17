@@ -42,6 +42,13 @@ module.exports = {
     filename: prod ? "static/js/bundle.js" : "static/js/[name].[contenthash:8].js",
     path: path.resolve(__dirname, "../dist"),
   },
+  resolve: {
+    mainFields: ["svelte"],
+    alias: {
+      svelte: path.resolve(__dirname, "../node_modules", "svelte"),
+    },
+    extensions: [".mjs", ".js", ".svelte"],
+  },
   module: {
     strictExportPresence: true,
     rules: [
@@ -81,6 +88,11 @@ module.exports = {
           {
             test: /\.jsx?$/i,
             use: "babel-loader",
+            exclude: /node_modules/,
+          },
+          {
+            test: /\.svelte$/i,
+            use: "svelte-loader",
             exclude: /node_modules/,
           },
           // url-loader 可将体积小于 limit 的目标文件转化为 base64 内嵌存储
