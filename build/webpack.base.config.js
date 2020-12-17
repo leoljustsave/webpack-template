@@ -6,6 +6,7 @@ const { HotModuleReplacementPlugin } = require("webpack");
 
 // plugin
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const safePostCssParser = require("postcss-safe-parser");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -35,6 +36,7 @@ const getStyleLoaders = (cssOption) => {
 };
 
 module.exports = {
+  target: "browserslist",
   entry: "./src/index.js",
   output: {
     filename: prod ? "static/js/bundle.js" : "static/js/[name].[contenthash:8].js",
@@ -49,12 +51,12 @@ module.exports = {
       {
         oneOf: [
           {
-            test: /.css$/i,
+            test: /\.css$/i,
             use: getStyleLoaders(),
             exclude: /node_modules/,
           },
           {
-            test: /.(scss|sass)$/i,
+            test: /\.s[ac]ss$/i,
             use: [
               ...getStyleLoaders({ sourceMap: SOURCE_MAP }),
               // 配合 sass-loader 使用 , 帮助 sass-loader 找到对应 url 资源
@@ -62,17 +64,22 @@ module.exports = {
                 loader: require.resolve("resolve-url-loader"),
                 options: {
                   sourceMap: SOURCE_MAP,
-                  root: path.resolve(__dirname, "./src"),
+                  root: path.resolve(__dirname, "../src"),
                 },
               },
-              "sass-loader",
+              {
+                loader: "sass-loader",
+                options: {
+                  sassOptions: { sourceMap: true, sourceMapContents: false },
+                },
+              },
             ],
             exclude: /node_modules/,
           },
           // babel-loader 自带 jsx 处理
           // babel-loader 通过 root 下 babel.config.js 进行配置
           {
-            test: /.jsx?$/i,
+            test: /\.jsx?$/i,
             use: "babel-loader",
             exclude: /node_modules/,
           },
@@ -114,6 +121,7 @@ module.exports = {
       new TerserPlugin({
         // sourceMap: SOURCE_MAP,
         exclude: /node_modules/,
+        parallel: true,
       }),
       // webpack 5 有内建 css minimizer , 使用需要覆盖
       // https://stackoverflow.com/questions/55340291/webpack-not-minifying-js-file-when-optimizecssassetsplugin-is-added-without-it
@@ -122,6 +130,7 @@ module.exports = {
         cssProcessorPluginOptions: {
           // cssProcessor option 配置
           // https://cssnano.co/docs/optimisations
+          cssProcessor: safePostCssParser, // 默认为 cssnano , 用于优化并压缩代码 , 使其在生产环境中最优化
           preset: ["default", { discardComments: { removeAll: SOURCE_MAP } }],
         },
         canPrint: prod,

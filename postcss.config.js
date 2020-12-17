@@ -1,5 +1,6 @@
 module.exports = {
   plugins: [
+    "postcss-flexbugs-fixes",
     [
       "postcss-preset-env",
       {
@@ -10,7 +11,6 @@ module.exports = {
         stage: 3,
       },
     ],
-    "postcss-flexbugs-fixes",
     [
       "postcss-normalize",
       {
