@@ -38,7 +38,7 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     filename: prod ? "static/js/bundle.js" : "static/js/[name].[contenthash:8].js",
-    path: path.resolve(__dirname, "./dist"),
+    path: path.resolve(__dirname, "../dist"),
   },
   module: {
     strictExportPresence: true,
