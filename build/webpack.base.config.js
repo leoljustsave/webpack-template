@@ -133,7 +133,6 @@ module.exports = {
     compress: true,
     port: 8000,
   },
-  devtool: prod ? false : "cheap-module-eval-source-map",
   // 当出错时直接失败 , 而不是容忍
   bail: prod,
   // 一些第三方库加载了 node 模块但是不能在浏览器使用他们
