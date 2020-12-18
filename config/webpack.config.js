@@ -2,7 +2,7 @@
 const path = require("path");
 
 // webpack
-const { HotModuleReplacementPlugin } = require("webpack");
+const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
 
 // plugin
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
@@ -17,7 +17,7 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const ENV = process.env.NODE_ENV || "development";
 const PROD_MODE = ENV === "production";
 const DEV_MODE = ENV === "development";
-const ANALYZER_MODE = false && DEV_MODE;
+const ANALYZER_MODE = true && DEV_MODE;
 const SOURCE_MAP = PROD_MODE ? false : true;
 
 // function
@@ -123,8 +123,13 @@ module.exports = {
       chunkFilename: "static/css/[contenthash:8].chunk.css",
     }),
     new HtmlWebpackPlugin({
-      template: "./public/index.html",
+      template: `./public/${PROD_MODE ? "prod" : "dev"}_index.html`,
     }),
+    DEV_MODE &&
+      new DllReferencePlugin({
+        context: path.resolve(__dirname),
+        manifest: path.join(__dirname, "./manifest.json"),
+      }),
     DEV_MODE && new HotModuleReplacementPlugin({}),
     ANALYZER_MODE &&
       new BundleAnalyzerPlugin({
@@ -168,4 +173,5 @@ module.exports = {
   performance: {
     hints: PROD_MODE ? false : "warning",
   },
+  devtool: PROD_MODE ? false : "source-map",
 };
