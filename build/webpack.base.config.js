@@ -11,23 +11,22 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 // const
 const ENV = process.env.NODE_ENV || "development";
-const prod = ENV === "production";
-const dev = ENV === "development";
-const SOURCE_MAP = prod ? false : true;
-
-console.log("dev: ", dev);
+const PROD_MODE = ENV === "production";
+const DEV_MODE = ENV === "development";
+const ANALYZER_MODE = false && DEV_MODE;
+const SOURCE_MAP = PROD_MODE ? false : true;
 
 // function
-
-// 生产环境推荐使用 mini-css-extract-plugin , 避免加载故障
-// 开发环境推荐使用 style-loader , 加快打包
 const getStyleLoaders = (cssOption) => {
   const loaders = [
-    prod && MiniCssExtractPlugin.loader,
-    dev && "style-loader",
+    // 生产环境推荐使用 mini-css-extract-plugin , 避免加载故障
+    // 开发环境推荐使用 style-loader , 加快打包
+    PROD_MODE && MiniCssExtractPlugin.loader,
+    DEV_MODE && "style-loader",
     {
       loader: "css-loader",
       options: cssOption,
@@ -40,18 +39,17 @@ const getStyleLoaders = (cssOption) => {
 
 module.exports = {
   target: "browserslist",
+  mode: ENV,
   entry: "./src/index.js",
   output: {
-    filename: prod ? "static/js/bundle.js" : "static/js/[name].[contenthash:8].js",
+    filename: "static/js/[name].[contenthash:8].js",
     path: path.resolve(__dirname, "../dist"),
   },
   resolve: {
     alias: {
-      svelte: path.resolve(__dirname, "../node_modules/svelte"),
       "@": path.resolve(__dirname, "../src"),
     },
-    extensions: [".mjs", ".js", ".svelte"],
-    mainFields: ["svelte", "browser", "module", "main"],
+    extensions: [".js"],
   },
   module: {
     strictExportPresence: true,
@@ -64,12 +62,6 @@ module.exports = {
         use: "babel-loader",
         exclude: /node_modules/,
       },
-      // svelte 支持
-      // {
-      //   test: /\.svelte$/i,
-      //   use: "svelte-loader",
-      //   exclude: /node_modules/,
-      // },
       {
         exclude: /node_modules/,
         oneOf: [
@@ -88,6 +80,9 @@ module.exports = {
                 options: {
                   sourceMap: SOURCE_MAP,
                   root: path.resolve(__dirname, "../src"),
+                  // 解决导入本地图片异常
+                  // https://blog.csdn.net/Piconjo/article/details/105855172
+                  esModule: false,
                 },
               },
               {
@@ -102,11 +97,11 @@ module.exports = {
           },
           // url-loader 可将体积小于 limit 的目标文件转化为 base64 内嵌存储
           {
-            test: [/\.jpe?g$/, /\.png$/],
+            test: [/\.jpe?g$/, /\.png$/, /\.svg/],
             loader: require.resolve("url-loader"),
             options: {
-              limit: 5000,
-              name: prod ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
+              limit: 1024 * 10,
+              name: PROD_MODE ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
             },
           },
           // 兜底文件 loader
@@ -130,7 +125,11 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./public/index.html",
     }),
-    dev && new HotModuleReplacementPlugin({}),
+    DEV_MODE && new HotModuleReplacementPlugin({}),
+    ANALYZER_MODE &&
+      new BundleAnalyzerPlugin({
+        analyzerPort: "8001",
+      }),
   ].filter(Boolean),
   optimization: {
     minimize: true,
@@ -150,9 +149,14 @@ module.exports = {
           cssProcessor: safePostCssParser, // 默认为 cssnano , 用于优化并压缩代码 , 使其在生产环境中最优化
           preset: ["default", { discardComments: { removeAll: SOURCE_MAP } }],
         },
-        canPrint: prod,
+        canPrint: PROD_MODE,
       }),
     ],
+    splitChunks: {
+      chunks: "all",
+      name: false,
+    },
+    runtimeChunk: { name: (entrypoint) => `runtimechunk~${entrypoint.name}` },
   },
   devServer: {
     hot: true,
@@ -160,17 +164,8 @@ module.exports = {
     port: 8000,
   },
   // 当出错时直接失败 , 而不是容忍
-  bail: prod,
-  // 一些第三方库加载了 node 模块但是不能在浏览器使用他们
-  // 通知 webpack 提供空内容
-  // node: {
-  //   module: "empty",
-  //   dgram: "empty",
-  //   dns: "mock",
-  //   fs: "empty",
-  //   http2: "empty",
-  //   net: "empty",
-  //   tls: "empty",
-  //   child_process: "empty",
-  // },
+  bail: PROD_MODE,
+  performance: {
+    hints: PROD_MODE ? false : "warning",
+  },
 };
