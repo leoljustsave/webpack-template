@@ -48,6 +48,7 @@ module.exports = {
   resolve: {
     alias: {
       svelte: path.resolve(__dirname, "../node_modules/svelte"),
+      "@": path.resolve(__dirname, "../src"),
     },
     extensions: [".mjs", ".js", ".svelte"],
     mainFields: ["svelte", "browser", "module", "main"],
@@ -63,11 +64,12 @@ module.exports = {
         use: "babel-loader",
         exclude: /node_modules/,
       },
-      {
-        test: /\.svelte$/i,
-        use: "svelte-loader",
-        exclude: /node_modules/,
-      },
+      // svelte 支持
+      // {
+      //   test: /\.svelte$/i,
+      //   use: "svelte-loader",
+      //   exclude: /node_modules/,
+      // },
       {
         exclude: /node_modules/,
         oneOf: [
