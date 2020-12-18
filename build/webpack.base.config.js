@@ -94,6 +94,7 @@ module.exports = {
                 loader: "sass-loader",
                 options: {
                   sassOptions: { sourceMap: true, sourceMapContents: false },
+                  implementation: require("sass"),
                 },
               },
             ],
