@@ -4393,7 +4393,7 @@ postcss@7.0.21:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@>=5.0.2, postcss@^8.1.0, postcss@^8.1.4, postcss@^8.2.1:
+postcss@>=5.0.2, postcss@^8.1.0, postcss@^8.1.4:
   version "8.2.1"
   resolved "https://registry.npmjs.org/postcss/-/postcss-8.2.1.tgz#eabc5557c4558059b9d9e5b15bce7ffa9089c2a8"
   integrity sha512-RhsqOOAQzTgh1UB/IZdca7F9WDb7SUCR2Vnv1x7DbvuuggQIpoDwjK+q0rzoPffhYvWNKX5JSwS4so4K3UC6vA==

@@ -21,6 +21,9 @@ const SOURCE_MAP = prod ? false : true;
 console.log("dev: ", dev);
 
 // function
+
+// 生产环境推荐使用 mini-css-extract-plugin , 避免加载故障
+// 开发环境推荐使用 style-loader , 加快打包
 const getStyleLoaders = (cssOption) => {
   const loaders = [
     prod && MiniCssExtractPlugin.loader,
@@ -43,19 +46,30 @@ module.exports = {
     path: path.resolve(__dirname, "../dist"),
   },
   resolve: {
-    mainFields: ["svelte"],
     alias: {
-      svelte: path.resolve(__dirname, "../node_modules", "svelte"),
+      svelte: path.resolve(__dirname, "../node_modules/svelte"),
     },
     extensions: [".mjs", ".js", ".svelte"],
+    mainFields: ["svelte", "browser", "module", "main"],
   },
   module: {
     strictExportPresence: true,
     rules: [
       { parser: { requireEnsure: false } },
-      // 生产环境推荐使用 mini-css-extract-plugin , 避免加载故障
-      // 开发环境推荐使用 style-loader , 加快打包
+      // babel-loader 自带 jsx 处理
+      // babel-loader 通过 root 下 babel.config.js 进行配置
       {
+        test: /\.m?jsx?$/i,
+        use: "babel-loader",
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.svelte$/i,
+        use: "svelte-loader",
+        exclude: /node_modules/,
+      },
+      {
+        exclude: /node_modules/,
         oneOf: [
           {
             test: /\.css$/i,
@@ -81,18 +95,6 @@ module.exports = {
                 },
               },
             ],
-            exclude: /node_modules/,
-          },
-          // babel-loader 自带 jsx 处理
-          // babel-loader 通过 root 下 babel.config.js 进行配置
-          {
-            test: /\.jsx?$/i,
-            use: "babel-loader",
-            exclude: /node_modules/,
-          },
-          {
-            test: /\.svelte$/i,
-            use: "svelte-loader",
             exclude: /node_modules/,
           },
           // url-loader 可将体积小于 limit 的目标文件转化为 base64 内嵌存储

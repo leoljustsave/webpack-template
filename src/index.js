@@ -13,7 +13,7 @@
 
 // render(<App />, document.querySelector("#app"));
 
-import App from "./page/App.svelte";
+import App from "./page/App";
 
 const app = new App({
   target: document.body,
