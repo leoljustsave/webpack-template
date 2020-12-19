@@ -3,11 +3,11 @@ module.exports = {
     [
       "postcss-preset-env",
       {
+        browsers: ["last 2 versions", "<1%"],
         autoprefixer: {
           flexbox: "no-2009",
           grid: true,
         },
-        stage: 3,
       },
     ],
     "postcss-flexbugs-fixes",

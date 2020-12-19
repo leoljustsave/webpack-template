@@ -39,6 +39,7 @@ const getStyleLoaders = (cssOption) => {
 
 module.exports = {
   mode: ENV,
+  target: DEV_MODE ? "web" : "browserslist",
   entry: "./src/index.js",
   output: {
     filename: "static/js/[name].[contenthash:8].js",
@@ -121,9 +122,31 @@ module.exports = {
       filename: "static/css/[contenthash:8].css",
       chunkFilename: "static/css/[contenthash:8].chunk.css",
     }),
-    new HtmlWebpackPlugin({
-      template: `./public/${PROD_MODE ? "prod" : "dev"}_index.html`,
-    }),
+    new HtmlWebpackPlugin(
+      Object.assign(
+        {},
+        DEV_MODE && {
+          template: "./public/dev_index.html",
+        },
+        PROD_MODE && {
+          template: "./public/prod_index.html",
+          // minify 参数文档
+          // https://github.com/terser/html-minifier-terser#options-quick-reference
+          minify: {
+            removeComments: true,
+            collapseWhitespace: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+            removeEmptyAttributes: true,
+            removeStyleLinkTypeAttributes: true,
+            keepClosingSlash: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true,
+          },
+        }
+      )
+    ),
     DEV_MODE &&
       new DllReferencePlugin({
         context: path.resolve(__dirname),
@@ -132,6 +155,7 @@ module.exports = {
     DEV_MODE && new HotModuleReplacementPlugin({}),
     ANALYZER_MODE &&
       new BundleAnalyzerPlugin({
+        openAnalyzer: false,
         analyzerPort: "8001",
       }),
   ].filter(Boolean),
@@ -170,7 +194,8 @@ module.exports = {
   // 当出错时直接失败 , 而不是容忍
   bail: PROD_MODE,
   performance: {
-    hints: PROD_MODE ? false : "warning",
+    // hints: PROD_MODE ? false : "warning",
+    hints: false,
   },
-  devtool: PROD_MODE ? false : "source-map",
+  devtool: PROD_MODE ? false : "inline-source-map",
 };

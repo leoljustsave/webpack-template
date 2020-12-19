@@ -5,7 +5,7 @@ import "./index.scss";
 const Home = () => {
   return (
     <div className="home-wrap">
-      <h3 className="title">TODO 121</h3>
+      <h3 className="title">Todo List</h3>
       <section className="btn-group">
         <input type="text" />
         <input type="button" value="more" />
