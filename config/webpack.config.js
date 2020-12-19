@@ -38,7 +38,6 @@ const getStyleLoaders = (cssOption) => {
 };
 
 module.exports = {
-  target: "browserslist",
   mode: ENV,
   entry: "./src/index.js",
   output: {
