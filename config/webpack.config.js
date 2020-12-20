@@ -4,7 +4,7 @@ const path = require("path");
 // webpack
 const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
 
-// plugin
+// functional plugin
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const safePostCssParser = require("postcss-safe-parser");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -12,7 +12,10 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+
+// supported plugin
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+// const DashboardPlugin = require("webpack-dashboard/plugin");
 
 // const
 const ENV = process.env.NODE_ENV || "development";
@@ -27,6 +30,7 @@ const smp = new SpeedMeasurePlugin();
 // function
 const getStyleLoaders = (cssOption) => {
   const loaders = [
+    // "thread-loader",
     // 生产环境推荐使用 mini-css-extract-plugin , 避免加载故障
     // 开发环境推荐使用 style-loader , 加快打包
     PROD_MODE && MiniCssExtractPlugin.loader,
@@ -137,6 +141,10 @@ const webpackConfig = smp.wrap({
         openAnalyzer: false,
         analyzerPort: "8001",
       }),
+    // ANALYZER_MODE &&
+    //   new DashboardPlugin({
+    //     port: 3002,
+    //   }),
   ].filter(Boolean),
   optimization: {
     minimize: true,
