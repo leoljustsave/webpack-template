@@ -12,6 +12,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 
 // const
 const ENV = process.env.NODE_ENV || "development";
@@ -19,6 +20,9 @@ const PROD_MODE = ENV === "production";
 const DEV_MODE = ENV === "development";
 const ANALYZER_MODE = true && DEV_MODE;
 const SOURCE_MAP = PROD_MODE ? false : true;
+
+// sppeedMeasurePlugin 打包测速
+const smp = new SpeedMeasurePlugin();
 
 // function
 const getStyleLoaders = (cssOption) => {
@@ -37,7 +41,7 @@ const getStyleLoaders = (cssOption) => {
   return loaders;
 };
 
-module.exports = {
+const webpackConfig = smp.wrap({
   mode: ENV,
   target: DEV_MODE ? "web" : "browserslist",
   entry: "./src/index.js",
@@ -122,31 +126,6 @@ module.exports = {
       filename: "static/css/[contenthash:8].css",
       chunkFilename: "static/css/[contenthash:8].chunk.css",
     }),
-    new HtmlWebpackPlugin(
-      Object.assign(
-        {},
-        DEV_MODE && {
-          template: "./public/dev_index.html",
-        },
-        PROD_MODE && {
-          template: "./public/prod_index.html",
-          // minify 参数文档
-          // https://github.com/terser/html-minifier-terser#options-quick-reference
-          minify: {
-            removeComments: true,
-            collapseWhitespace: true,
-            removeRedundantAttributes: true,
-            useShortDoctype: true,
-            removeEmptyAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-            keepClosingSlash: true,
-            minifyJS: true,
-            minifyCSS: true,
-            minifyURLs: true,
-          },
-        }
-      )
-    ),
     DEV_MODE &&
       new DllReferencePlugin({
         context: path.resolve(__dirname),
@@ -198,4 +177,36 @@ module.exports = {
     hints: false,
   },
   devtool: PROD_MODE ? false : "inline-source-map",
-};
+});
+
+// html-webpack-plugin 直接写在里面会和 speed-measure-webpack-plugin 起冲突
+// 考虑是作用域的问题
+webpackConfig.plugins.push(
+  new HtmlWebpackPlugin(
+    Object.assign(
+      {},
+      DEV_MODE && {
+        template: "./public/dev_index.html",
+      },
+      PROD_MODE && {
+        template: "./public/prod_index.html",
+        // minify 参数文档
+        // https://github.com/terser/html-minifier-terser#options-quick-reference
+        minify: {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true,
+        },
+      }
+    )
+  )
+);
+
+module.exports = webpackConfig;
