@@ -1,3 +1,7 @@
+/**
+ * 单纯的一个配置文件 和 postcss.config.js 配置格式不相关
+ * 在 webpack.config.js 中引入使用
+ */
 module.exports = {
   plugins: [
     [

@@ -1,6 +1,10 @@
 // node
 const path = require("path");
 
+// config
+const babelConfig = require("./babel.config");
+const postcssConfig = require("./postcss.config");
+
 // utils
 const { getRightPort } = require("../utils/cli");
 
@@ -20,12 +24,17 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 // const DashboardPlugin = require("webpack-dashboard/plugin");
 
-// const
+// env config
 const ENV = process.env.NODE_ENV || "development";
 const PROD_MODE = ENV === "production";
 const DEV_MODE = ENV === "development";
+
+// option config
 const ANALYZER_MODE = true && DEV_MODE;
 const SOURCE_MAP = PROD_MODE ? false : true;
+
+// value config
+const SERVER_PORT = getRightPort();
 
 // sppeedMeasurePlugin 打包测速
 const smp = new SpeedMeasurePlugin();
@@ -38,11 +47,8 @@ const getStyleLoaders = (cssOption) => {
     // 开发环境推荐使用 style-loader , 加快打包
     PROD_MODE && MiniCssExtractPlugin.loader,
     DEV_MODE && "style-loader",
-    {
-      loader: "css-loader",
-      options: cssOption,
-    },
-    "postcss-loader",
+    { loader: "css-loader", options: cssOption },
+    { loader: "postcss-loader", options: { postcssOptions: postcssConfig } },
   ].filter(Boolean);
 
   return loaders;
@@ -70,7 +76,7 @@ const webpackConfig = smp.wrap({
       // babel-loader 通过 root 下 babel.config.js 进行配置
       {
         test: /\.m?jsx?$/i,
-        use: "babel-loader",
+        use: { loader: "babel-loader", options: babelConfig },
         exclude: /node_modules/,
       },
       {
@@ -113,6 +119,7 @@ const webpackConfig = smp.wrap({
             options: {
               limit: 1024 * 10,
               name: PROD_MODE ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
+              esModule: false
             },
           },
           // 兜底文件 loader
@@ -121,6 +128,7 @@ const webpackConfig = smp.wrap({
             exclude: [/\.(js|jsx|ts|tsx|svelte)$/, /\.html$/, /\.json$/],
             options: {
               name: "static/media/[name].[hash:8].[ext]",
+              esModule: false
             },
           },
         ],
@@ -179,7 +187,7 @@ const webpackConfig = smp.wrap({
   devServer: {
     hot: true,
     compress: true,
-    port: 8000,
+    port: 8001,
     host: "0.0.0.0",
   },
   // 当出错时直接失败 , 而不是容忍

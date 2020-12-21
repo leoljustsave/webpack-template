@@ -1,6 +1,6 @@
 const portfinder = require("portfinder");
 
-module.export.getRightPort = async (basePort = 8000) => {
+exports.getRightPort = async (basePort = 8000) => {
   portfinder.basePort = basePort;
 
   try {
