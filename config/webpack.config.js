@@ -177,6 +177,7 @@ const webpackConfig = smp.wrap({
     hot: true,
     compress: true,
     port: 8000,
+    host: "0.0.0.0",
   },
   // 当出错时直接失败 , 而不是容忍
   bail: PROD_MODE,
