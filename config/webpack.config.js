@@ -1,6 +1,9 @@
 // node
 const path = require("path");
 
+// utils
+const { getRightPort } = require("../utils/cli");
+
 // webpack
 const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
 
@@ -139,11 +142,11 @@ const webpackConfig = smp.wrap({
     ANALYZER_MODE &&
       new BundleAnalyzerPlugin({
         openAnalyzer: false,
-        analyzerPort: "8001",
+        analyzerPort: "9000",
       }),
     // ANALYZER_MODE &&
     //   new DashboardPlugin({
-    //     port: 3002,
+    //     port: 9001,
     //   }),
   ].filter(Boolean),
   optimization: {
