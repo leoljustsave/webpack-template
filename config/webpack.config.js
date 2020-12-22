@@ -36,9 +36,6 @@ const SOURCE_MAP = PROD_MODE ? false : true;
 // value config
 const SERVER_PORT = getRightPort();
 
-// sppeedMeasurePlugin 打包测速
-const smp = new SpeedMeasurePlugin();
-
 // function
 const getStyleLoaders = (cssOption) => {
   const loaders = [
@@ -54,7 +51,7 @@ const getStyleLoaders = (cssOption) => {
   return loaders;
 };
 
-const webpackConfig = smp.wrap({
+let webpackConfig = {
   mode: ENV,
   target: DEV_MODE ? "web" : "browserslist",
   entry: "./src/index.js",
@@ -77,6 +74,11 @@ const webpackConfig = smp.wrap({
       {
         test: /\.m?jsx?$/i,
         use: { loader: "babel-loader", options: babelConfig },
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.tsx?$/i,
+        use: { loader: "ts-loader" },
         exclude: /node_modules/,
       },
       {
@@ -119,7 +121,7 @@ const webpackConfig = smp.wrap({
             options: {
               limit: 1024 * 10,
               name: PROD_MODE ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
-              esModule: false
+              esModule: false,
             },
           },
           // 兜底文件 loader
@@ -128,7 +130,7 @@ const webpackConfig = smp.wrap({
             exclude: [/\.(js|jsx|ts|tsx|svelte)$/, /\.html$/, /\.json$/],
             options: {
               name: "static/media/[name].[hash:8].[ext]",
-              esModule: false
+              esModule: false,
             },
           },
         ],
@@ -185,7 +187,7 @@ const webpackConfig = smp.wrap({
     runtimeChunk: { name: (entrypoint) => `runtimechunk~${entrypoint.name}` },
   },
   devServer: {
-    hot: true,
+    hot: false,
     compress: true,
     port: 8001,
     host: "0.0.0.0",
@@ -197,7 +199,13 @@ const webpackConfig = smp.wrap({
     hints: false,
   },
   devtool: PROD_MODE ? false : "inline-source-map",
-});
+};
+
+// speed-measure-plugin 测速
+if (DEV_MODE) {
+  const smp = new SpeedMeasurePlugin();
+  webpackConfig = smp.wrap(webpackConfig);
+}
 
 // html-webpack-plugin 直接写在里面会和 speed-measure-webpack-plugin 起冲突
 // 考虑是作用域的问题
