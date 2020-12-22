@@ -14,6 +14,7 @@ const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
 // functional plugin
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const safePostCssParser = require("postcss-safe-parser");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -116,7 +117,7 @@ let webpackConfig = {
           },
           // url-loader 可将体积小于 limit 的目标文件转化为 base64 内嵌存储
           {
-            test: [/\.jpe?g$/, /\.png$/, /\.svg/],
+            test: [/\.(jpe?g|png|gif|svg)$/i],
             loader: require.resolve("url-loader"),
             options: {
               limit: 1024 * 10,
@@ -140,8 +141,8 @@ let webpackConfig = {
   plugins: [
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
-      filename: "static/css/[contenthash:8].css",
-      chunkFilename: "static/css/[contenthash:8].chunk.css",
+      filename: "static/css/[name].[contenthash:8].css",
+      chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
     }),
     DEV_MODE &&
       new DllReferencePlugin({
@@ -172,9 +173,10 @@ let webpackConfig = {
       new OptimizeCssAssetsPlugin({
         // cssProcessor: require("cssnano"), // 默认为 cssnano , 用于优化并压缩代码 , 使其在生产环境中最优化
         cssProcessorPluginOptions: {
-          // cssProcessor option 配置
+          // cssProcessor 默认为 cssnano , 用于优化并压缩代码 , 使其在生产环境中最优化
+          // cssnano option 配置
           // https://cssnano.co/docs/optimisations
-          cssProcessor: safePostCssParser, // 默认为 cssnano , 用于优化并压缩代码 , 使其在生产环境中最优化
+          cssProcessor: safePostCssParser,
           preset: ["default", { discardComments: { removeAll: SOURCE_MAP } }],
         },
         canPrint: PROD_MODE,
@@ -234,7 +236,17 @@ webpackConfig.plugins.push(
         },
       }
     )
-  )
+  ),
+  new ImageMinimizerPlugin({
+    minimizerOptions: {
+      plugins: [
+        ["gifsicle", { interlaced: true }],
+        ["jpegtran", { progressive: true }],
+        ["optipng", { optimizationLevel: 5 }],
+        ["svgo", { plugins: [{ removeViewBox: false }] }],
+      ],
+    },
+  })
 );
 
 module.exports = webpackConfig;

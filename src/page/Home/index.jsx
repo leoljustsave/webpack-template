@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
+
+import pic from "./1.jpg";
 
 import "./index.scss";
 
 const Home = () => {
+  useEffect(() => {
+    window.scrollTo({
+      top: 100,
+    });
+  }, []);
+
   return (
     <div className="home-wrap">
       <h3 className="title">Todo 12</h3>
@@ -12,6 +20,9 @@ const Home = () => {
       </section>
       <section className="todo-list">
         <p className="todo-item"></p>
+      </section>
+      <section>
+        <img src={pic} alt="" />
       </section>
     </div>
   );
