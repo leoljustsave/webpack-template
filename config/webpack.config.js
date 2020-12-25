@@ -63,7 +63,7 @@ let webpackConfig = {
     extensions: [".js", ".jsx", "tsx"],
     alias: {
       "@": path.resolve(__dirname, "../src"),
-      pages: path.resolve(__dirname, "../src/page"),
+      pages: path.resolve(__dirname, "../src/pages"),
       assets: path.resolve(__dirname, "../src/assets"),
     },
   },
