@@ -1,7 +1,7 @@
 import React from "react";
 import { render } from "react-dom";
 
-import Home from "./page/Home/index.jsx";
+import Home from "pages/Home";
 
 const App = () => {
   return (

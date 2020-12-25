@@ -6,7 +6,7 @@ const babelConfig = require("./babel.config");
 const postcssConfig = require("./postcss.config");
 
 // utils
-const { getRightPort } = require("../utils/cli");
+const { getRightPort } = require("../src/utils/cli");
 
 // webpack
 const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
@@ -14,7 +14,6 @@ const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
 // functional plugin
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const safePostCssParser = require("postcss-safe-parser");
-const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -61,10 +60,12 @@ let webpackConfig = {
     path: path.resolve(__dirname, "../dist"),
   },
   resolve: {
+    extensions: [".js", ".jsx", "tsx"],
     alias: {
       "@": path.resolve(__dirname, "../src"),
+      pages: path.resolve(__dirname, "../src/page"),
+      assets: path.resolve(__dirname, "../src/assets"),
     },
-    extensions: [".js"],
   },
   module: {
     strictExportPresence: true,
@@ -176,7 +177,7 @@ let webpackConfig = {
           // cssProcessor 默认为 cssnano , 用于优化并压缩代码 , 使其在生产环境中最优化
           // cssnano option 配置
           // https://cssnano.co/docs/optimisations
-          cssProcessor: safePostCssParser,
+          cssProcessor: { parser: safePostCssParser, map: false },
           preset: ["default", { discardComments: { removeAll: SOURCE_MAP } }],
         },
         canPrint: PROD_MODE,
@@ -236,17 +237,7 @@ webpackConfig.plugins.push(
         },
       }
     )
-  ),
-  new ImageMinimizerPlugin({
-    minimizerOptions: {
-      plugins: [
-        ["gifsicle", { interlaced: true }],
-        ["jpegtran", { progressive: true }],
-        ["optipng", { optimizationLevel: 5 }],
-        ["svgo", { plugins: [{ removeViewBox: false }] }],
-      ],
-    },
-  })
+  )
 );
 
 module.exports = webpackConfig;
