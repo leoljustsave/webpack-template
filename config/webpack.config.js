@@ -6,7 +6,7 @@ const babelConfig = require("./babel.config");
 const postcssConfig = require("./postcss.config");
 
 // utils
-const { getRightPort } = require("../src/utils/cli");
+const { getRightPort, getMPAInfo } = require("../src/utils/cli");
 
 // webpack
 const { HotModuleReplacementPlugin, DllReferencePlugin } = require("webpack");
@@ -25,9 +25,11 @@ const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 // const DashboardPlugin = require("webpack-dashboard/plugin");
 
 // env config
+console.log(process.env.MAP_MODE);
 const ENV = process.env.NODE_ENV || "development";
 const PROD_MODE = ENV === "production";
 const DEV_MODE = ENV === "development";
+const MPA_MODE = process.env.MAP_MODE === "true"; // 是否启用多页面配置
 
 // option config
 const ANALYZER_MODE = true && DEV_MODE;
@@ -51,10 +53,36 @@ const getStyleLoaders = (cssOption) => {
   return loaders;
 };
 
+// NOTE: 初始化单页 / 多页数据内容
+const htmlWebpackPluginConfig = Object.assign(
+  {},
+  DEV_MODE && {
+    template: "./public/dev_index.html",
+  },
+  PROD_MODE && {
+    template: "./public/prod_index.html",
+    // minify 参数文档
+    // https://github.com/terser/html-minifier-terser#options-quick-reference
+    minify: {
+      removeComments: true,
+      collapseWhitespace: true,
+      removeRedundantAttributes: true,
+      useShortDoctype: true,
+      removeEmptyAttributes: true,
+      removeStyleLinkTypeAttributes: true,
+      keepClosingSlash: true,
+      minifyJS: true,
+      minifyCSS: true,
+      minifyURLs: true,
+    },
+  }
+);
+const { entrys: MPA_ENTRY, htmls: MPA_HTML } = MPA_MODE ? getMPAInfo(htmlWebpackPluginConfig) : {};
+
 let webpackConfig = {
   mode: ENV,
   target: DEV_MODE ? "web" : "browserslist",
-  entry: "./src/index.js",
+  entry: MPA_ENTRY || "./src/index.js",
   output: {
     filename: "static/js/[name].[contenthash:8].js",
     path: path.resolve(__dirname, "../dist"),
@@ -193,7 +221,7 @@ let webpackConfig = {
     hot: false,
     compress: true,
     port: 8001,
-    host: "0.0.0.0",
+    host: "127.0.0.1",
   },
   // 当出错时直接失败 , 而不是容忍
   bail: PROD_MODE,
@@ -212,32 +240,6 @@ if (DEV_MODE) {
 
 // html-webpack-plugin 直接写在里面会和 speed-measure-webpack-plugin 起冲突
 // 考虑是作用域的问题
-webpackConfig.plugins.push(
-  new HtmlWebpackPlugin(
-    Object.assign(
-      {},
-      DEV_MODE && {
-        template: "./public/dev_index.html",
-      },
-      PROD_MODE && {
-        template: "./public/prod_index.html",
-        // minify 参数文档
-        // https://github.com/terser/html-minifier-terser#options-quick-reference
-        minify: {
-          removeComments: true,
-          collapseWhitespace: true,
-          removeRedundantAttributes: true,
-          useShortDoctype: true,
-          removeEmptyAttributes: true,
-          removeStyleLinkTypeAttributes: true,
-          keepClosingSlash: true,
-          minifyJS: true,
-          minifyCSS: true,
-          minifyURLs: true,
-        },
-      }
-    )
-  )
-);
+webpackConfig.plugins.push(...(MPA_HTML || [new HtmlWebpackPlugin(htmlWebpackPluginConfig)]));
 
 module.exports = webpackConfig;
