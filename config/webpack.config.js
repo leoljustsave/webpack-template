@@ -96,9 +96,8 @@ let webpackConfig = {
     },
   },
   module: {
-    strictExportPresence: true,
     rules: [
-      { parser: { requireEnsure: false } },
+      { parser: { dataUrlCondition: { maxSize: 1024 * 4 } } },
       // babel-loader 自带 jsx 处理
       // babel-loader 通过 root 下 babel.config.js 进行配置
       {
@@ -147,21 +146,13 @@ let webpackConfig = {
           // url-loader 可将体积小于 limit 的目标文件转化为 base64 内嵌存储
           {
             test: [/\.(jpe?g|png|gif|svg)$/i],
-            loader: require.resolve("url-loader"),
-            options: {
-              limit: 1024 * 10,
-              name: PROD_MODE ? "static/assets/[hash:8].[ext]" : "static/assets/[name].[ext]",
-              esModule: false,
-            },
+            type: "asset/inline",
           },
           // 兜底文件 loader
           {
             loader: require.resolve("file-loader"),
             exclude: [/\.(js|jsx|ts|tsx|svelte)$/, /\.html$/, /\.json$/],
-            options: {
-              name: "static/media/[name].[hash:8].[ext]",
-              esModule: false,
-            },
+            type: "asset/resource",
           },
         ],
       },
@@ -196,6 +187,9 @@ let webpackConfig = {
         // sourceMap: SOURCE_MAP,
         exclude: /node_modules/,
         parallel: true,
+        terserOptions: {
+          // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+        },
       }),
       // webpack 5 有内建 css minimizer , 使用需要覆盖
       // https://stackoverflow.com/questions/55340291/webpack-not-minifying-js-file-when-optimizecssassetsplugin-is-added-without-it
