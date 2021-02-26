@@ -1,14 +1,9 @@
 import React from "react";
 import { render } from "react-dom";
 
-import Home from "pages/Home";
+// routes
+import { HashRouter } from "react-router-dom";
+import { renderRoutes } from "react-router-config";
+import routes from "@/routes";
 
-const App = () => {
-  return (
-    <div>
-      <Home />
-    </div>
-  );
-};
-
-render(<App />, document.querySelector("#app"));
+render(<HashRouter>{renderRoutes(routes)}</HashRouter>, document.querySelector("#app"));
